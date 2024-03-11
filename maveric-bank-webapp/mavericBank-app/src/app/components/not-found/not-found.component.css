@@ -1,0 +1,14 @@
+.error-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  
+  .error-message {
+    font-family: Arial, sans-serif;
+    font-size: 3rem;
+    color: #ff5722; /* or any other color you prefer */
+    text-align: center;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  }

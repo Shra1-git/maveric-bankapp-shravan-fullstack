@@ -1,0 +1,27 @@
+
+<p class="form-container"> 
+    <mat-toolbar class="center-align">
+      <span><b>Add Account</b></span>
+    </mat-toolbar>
+</p>
+
+<form [formGroup]="accountForm" class="form-container" (ngSubmit)="onSubmit()">
+  <mat-form-field class="example-full-width">
+    <mat-label>Account Type</mat-label>
+    <mat-select formControlName="type" placeholder="Select Account Type">
+      <mat-option value="Savings">Savings</mat-option>
+      <mat-option value="Current">Current</mat-option>
+    </mat-select>
+    <mat-error *ngIf="accountForm.get('accountType')?.hasError('required')">Account Type is required</mat-error>
+  </mat-form-field>
+  
+    <mat-form-field class="example-full-width" >
+      <mat-label>Customer Id</mat-label>
+      <input matInput formControlName="customerId" placeholder="Customer ID" readonly>
+      <mat-error *ngIf="accountForm.get('customerId')?.hasError('required')">Customer ID is required</mat-error>
+    </mat-form-field>
+  
+    <p class="note">By clicking submit, you acknowledge to create a savings account in our bank and have read the terms and conditions.</p>
+
+    <button mat-raised-button color="primary" type="submit" [disabled]="!accountForm.valid" >Submit</button>
+  </form>

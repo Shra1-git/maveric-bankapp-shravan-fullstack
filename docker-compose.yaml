@@ -1,0 +1,161 @@
+version: '3.8'
+
+services:
+  mysql_account:
+    image: mysql:latest
+    container_name: my-mysql-account-container
+    restart: always
+    environment:
+      MYSQL_DATABASE: maveric_account_db
+      MYSQL_USER: shravan_user
+      MYSQL_PASSWORD: shravan_password
+      MYSQL_ROOT_PASSWORD: my-secret-pw
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+  account-service:
+    build:
+      context: .
+      dockerfile: services/account_Service/Dockerfile
+    container_name: my-spring-boot-container
+    restart: always
+    ports:
+      - "3010:3010"
+    depends_on:
+      - mysql_account
+      - eureka-service
+      - balance-service
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql_account:3306/maveric_account_db
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: my-secret-pw
+
+  eureka-service:
+    build:
+      context: .
+      dockerfile: services/Eureka_service/Dockerfile
+    container_name: my-eureka-service-container
+    restart: always
+    ports:
+      - "8761:8761"
+
+  gateway_service:
+    build:
+      context: .
+      dockerfile: services/gateway_service/Dockerfile
+    container_name: my-gateway-service-container
+    restart: always
+    ports:
+      - "8000:8000"
+    depends_on:
+      - eureka-service
+
+  mysql_user:
+    image: mysql:latest
+    container_name: my-mysql-user-container
+    restart: always
+    environment:
+      MYSQL_DATABASE: maveric_user_db
+      MYSQL_USER: user_service_user
+      MYSQL_PASSWORD: user_service_password
+      MYSQL_ROOT_PASSWORD: my-secret-pw
+    ports:
+      - "3051:3051"
+    volumes:
+      - mysql-user-data:/var/lib/mysql
+
+  mysql_transaction:
+    image: mysql:latest
+    container_name: my-mysql-transaction-container
+    restart: always
+    environment:
+      MYSQL_DATABASE: maveric_transaction_db
+      MYSQL_USER: transaction_service_user
+      MYSQL_PASSWORD: transaction_service_password
+      MYSQL_ROOT_PASSWORD: my-secret-pw
+    ports:
+      - "3021:3021"
+    volumes:
+      - mysql-transaction-data:/var/lib/mysql
+
+  user-service:
+    build:
+      context: .
+      dockerfile: services/User-Service/Dockerfile
+    container_name: my-user-service-container
+    restart: always
+    ports:
+      - "3005:3005"
+    depends_on:
+      - mysql_user
+      - eureka-service
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql_user:3306/user_db
+      SPRING_DATASOURCE_USERNAME: user_service_user
+      SPRING_DATASOURCE_PASSWORD: user_service_password
+
+  transaction-service:
+    build:
+      context: .
+      dockerfile: services/transaction-service/Dockerfile
+    container_name: my-transaction-service-container
+    restart: always
+    ports:
+      - "3020:3020"
+    depends_on:
+      - mysql_transaction
+      - eureka-service
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql_transaction:3306/transaction_db
+      SPRING_DATASOURCE_USERNAME: transaction_service_user
+      SPRING_DATASOURCE_PASSWORD: transaction_service_password
+
+  mongodb:
+    image: mongo:latest
+    container_name: my-mongodb-container
+    restart: always
+    environment:
+      MONGO_INITDB_DATABASE: maveric_balance_db
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: my-secret-pw
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb-data:/data/db
+
+  balance-service:
+    build:
+      context: .
+      dockerfile: services/balance-Service/Dockerfile
+    container_name: my-balance-service-container
+    restart: always
+    ports:
+      - "3015:3015"
+    depends_on:
+      - mongodb
+      - eureka-service
+    environment:
+      SPRING_DATA_MONGODB_HOST: mongodb
+      SPRING_DATA_MONGODB_PORT: 27017
+      SPRING_DATA_MONGODB_DATABASE: maveric_balance_db
+      SPRING_DATA_MONGODB_USERNAME: admin
+      SPRING_DATA_MONGODB_PASSWORD: my-secret-pw
+
+angular-app:
+  build:
+    context: ./maveric-bank-webapp/mavericBank-app
+    dockerfile: Dockerfile
+  container_name: my-angular-app
+  restart: always
+  ports:
+    - "8080:4200"
+  depends_on:
+    - gateway_service
+
+volumes:
+  mysql-data:
+  mysql-user-data:
+  mysql-transaction-data:
+  mongodb-data:
